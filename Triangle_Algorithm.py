@@ -2,48 +2,49 @@
 import numpy as np
 import scipy
 
-def Triangle_Algorithm(dataset, p, epsilon, **kwargs):
-    matA = dataset
+__author__ = 'karrnb'
+
+def Triangle_Algorithm(data, p, epsilon, **kwargs):
+    matA = data
     [m, n] = matA.shape
     diffmat = np.subtract(matA, np.tile(p, (1, n)))
-
-    eudis = np.sum(np.square(diffmat), axis=0)
-    min_index = np.argmin(eudis)
-    p_p = matA[:,int(min_index)]
+    euclid_dist = np.sum(np.square(diffmat), axis=0)
+    min_index = np.argmin(euclid_dist)
+    p_prime = matA[:,int(min_index)]
     alpha = np.zeros((1, n), dtype=np.int)
     alpha[0][int(min_index)] = 1
 
     # Situation when input matrix has only one point
-    distance = np.amax(eudis)
+    distance = np.amin(euclid_dist)
     if n<=1:
-        if np.amin(eudis) != 0:
-            return [0, p_p, alpha, np.amin(eudis)]
+        if np.amin(euclid_dist) != 0:
+            return [0, p_prime, alpha, np.amin(euclid_dist)]
         else:
-            return [1, p, alpha, np.amin(eudis)]
+            return [1, p, alpha, np.amin(euclid_dist)]
 
     # Iterative step
-    inorout = 1
+    flag = 1
     iter = 0
-    while float(np.sqrt(np.dot((p - p_p).conj().T, p - p_p))) > epsilon:
+    while float(np.sqrt(np.dot((p - p_prime).conj().T, p - p_prime))) > epsilon:
         iter = iter + 1
         found = 0
-        distance = np.sqrt(np.dot((p-p_p).conj().T, p-p_p))
-        rnd_index = np.random.choice(n, size=n, replace=False)
-        for ii_index in rnd_index:
+        distance = np.sqrt(np.dot((p - p_prime).conj().T, p - p_prime))
+        random_index = np.random.choice(n, size=n, replace=False)
+        for index in random_index:
             iter = iter + 1
-            if np.dot((p - matA[:,ii_index]).conj().T, p - matA[:,ii_index]) < np.dot((p_p - matA[:,ii_index]).conj().T, p_p - matA[:,ii_index]):
-                beta = np.divide(float(np.dot((p_p-matA[:,ii_index]).conj().T, p_p-p)), float(np.dot((p_p-matA[:,ii_index]).conj().T, p_p-matA[:,ii_index])))
+            if np.dot((p - matA[:,index]).conj().T, p - matA[:,index]) < np.dot((p_prime - matA[:,index]).conj().T, p_prime - matA[:,index]):
+                beta = np.divide(float(np.dot((p_prime - matA[:,index]).conj().T, p_prime - p)), float(np.dot((p_prime - matA[:,index]).conj().T, p_prime - matA[:,index])))
                 alpha = np.dot(1 - beta, alpha)
-                alpha[0][ii_index] = alpha[0][ii_index] + beta
-                p_p = np.dot(1 - beta, p_p) + np.dot(beta, matA[:,ii_index])
+                alpha[0][index] = alpha[0][index] + beta
+                p_prime = np.dot(1 - beta, p_prime) + np.dot(beta, matA[:,index])
                 found = 1
                 break
 
         if found == 0:
-            inorout = 0
+            flag = 0
             break
 
-    return [inorout, p_p, alpha, float(distance)]
+    return [flag, p_prime, alpha, float(distance)]
 
 # define input variables
 # input_mat = np.matrix(np.arange(10).reshape((2,5)))
@@ -56,7 +57,7 @@ print 'Input matrix: '
 print input_mat
 print 'Point P: ' + str(np.matrix.flatten(point))
 
-flag, p_prime, coef, distance = Triangle_Algorithm(dataset=input_mat, p=point, epsilon=0.1)
+flag, p_primerime, coef, distance = Triangle_Algorithm(data=input_mat, p=point, epsilon=0.1)
 
 print '\nOutput: '
 
@@ -65,6 +66,6 @@ if flag == 0:
 else:
     print 'p is in Convex Hull'
 
-print 'p prime is at: ' + str(np.matrix.flatten(p_prime))
+print 'p prime is at: ' + str(np.matrix.flatten(p_primerime))
 
 print 'distace of p from p prime is: ' + str(distance)
